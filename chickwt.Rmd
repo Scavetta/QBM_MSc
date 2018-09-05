@@ -1,0 +1,82 @@
+---
+title: "Chick Weight Analysis"
+author: "Rick Scavetta"
+date: "03/09/2018"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float:
+      collapsed: FALSE
+      smooth_scroll: FALSE
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+# Load packages
+library(tidyverse)
+library(knitr)
+library(DT)
+```
+
+This experiment examined the effects of different feed types on chick weight over a period of 6 weeks after birth.
+
+## Descriptive Statistics
+
+```{r summary}
+chickwts %>%
+  group_by(feed) %>% # comment
+  summarise(avg = mean(weight),
+            stdev = sd(weight),
+            n = n()) -> CWsummary
+```
+
+```{r eval = FALSE}
+kable(CWsummary)
+```
+
+```{r}
+datatable(CWsummary)
+```
+
+
+## Plots
+
+```{r boxplots, fig.cap = 'A nice boxplot.'}
+ggplot(chickwts, aes(x = feed, y = weight)) +
+  geom_boxplot()
+```
+
+
+```{r meanSD, fig.cap = 'Dot plot with summary stats.'}
+ggplot(chickwts, aes(x = feed, y = weight)) +
+  geom_jitter(width = 0.2, alpha = 0.65) +
+  geom_pointrange(data = CWsummary, aes(x = feed, 
+                                        y = avg,
+                                        ymin = avg - stdev,
+                                        ymax = avg + stdev), col = "red")
+```
+
+## Inferential Statistics
+
+The one-way ANOVA summary:
+
+```{r ANOVA}
+chick.lm <- lm(weight ~ feed, data = chickwts)
+datatable(anova(chick.lm))
+```
+
+Tukey’s Post-hoc test:
+
+```{r posthocTests}
+
+chickPHT <- TukeyHSD(aov(weight ~ feed, data = chickwts))
+
+datatable(chickPHT$feed)
+```
+
+
+
+
+
+
