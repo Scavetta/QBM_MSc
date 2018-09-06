@@ -425,6 +425,182 @@ foo.df %>%
 foo.df %>%
   filter(tissue %in% c("Liver", "Heart"))
 
+# Element 5: Indexing
+# Finding information according to position using []
+
+# Vectors:
+foo1
+foo1[6] # The sixth value
+foo1[p] # The pth value, p == 6
+foo1[3:p] # 3rd to pth values
+foo1[p:length(foo1)] # pth to last value
+
+# use combinations of
+# integers, objects, functions, etc...
+
+# But, the exciting part is ... logical vectors!
+# i.e. the result of logical expressions
+# all values less than 50
+foo1[foo1 < 50]
+
+# Data frames: 2 dimensions so use [rows, cols]
+foo.df[3, ] # 3rd row, ALL cols
+foo.df[ ,3] # ALL rows, 3rd col by number
+foo.df[ ,"quantity"] # ALL rows, 3rd col by name
+
+# no comma is a short cut to access columns
+foo.df[3]
+foo.df["quantity"]
+
+# But compare this to:
+foo.df[ ,3]
+
+# R switched to a vector! To prevent this
+# use a tibble
+foo.df <- as_tibble(foo.df)
+
+# The data frame always remains a data frame:
+foo.df[ ,3]
+
+# Can I have a comma with a 1D vector
+foo1[,6]
+foo1[6,]
+# Error!
+
+# Exercises:
+# use [] or filter()
+# or... even subset() (common but old)
+
+# 1 - 3rd to the 6th rows, only quantity
+foo.df[3:6,3]
+foo.df[3:6,"quantity"] # a nicer way
+foo.df$quantity[3:6] # as a vector
+
+# 2 - Everything except the healthy column
+foo.df[,2:3]
+foo.df[,-1]
+foo.df[,names(foo.df) != "healthy"]
+foo.df[,c("tissue", "quantity")]
+# also...
+foo.df[,-(c(1,3))] # exclude more than one column
+
+# 3 - Tissues that have a quantity less than 10
+foo.df[foo.df$quantity < 10, "tissue"]
+foo.df$tissue[foo.df$quantity < 10]
+
+# 4 - Which tissue has the highest quantity?
+max(foo.df$quantity) # gives actual value
+which.max(foo.df$quantity) # Where is it?
+foo.df$tissue[which.max(foo.df$quantity)] # index it
+
+# Element 8: Factor Variables (with levels)
+# aka categorical, discrete, qualitative (with groups)
+
+# Factor is a special class of type integer
+# with labels:
+# e.g.
+PlantGrowth$group
+typeof(PlantGrowth$group) # "integer"
+class(PlantGrowth$group) # "factor"
+
+# you can see it here:
+str(PlantGrowth)
+
+# some problems:
+foo3 # character
+foo.df$tissue # factor
+
+str(foo.df)
+
+# convert to a character:
+as.character(PlantGrowth$group) # The labels for each level
+as.integer(PlantGrowth$group) # The actual value of the level
+
+# Element 9: Tidy Data
+source("PlayData.R")
+
+# Make the data tidy using the tidyr package
+# Part of the tidyverse
+# gather() with 4 arguments:
+# 1 - data
+# 2&3 - key, value (the names of the OUTPUT columns)
+# 4 - either the ID or the MEASURE variables
+gather(PlayData, key, value, -c(type, time)) # give ID vars
+gather(PlayData, key, value, c(height, width)) # give MEASURE vars
+
+# Assign to new Data Frame
+PlayData.t <- gather(PlayData, key, value, -c(type, time))
+
+# To do transformations, it's easiest to have two columns:
+# Scenario 1: According to measure and type
+PlayData.t %>%
+  spread(type, value) -> scenario1
+scenario1$A/scenario1$B
+
+# Scenario 2: According to measure and time
+PlayData.t %>%
+  spread(time, value) -> scenario2
+scenario2$`1`/scenario2$`2`
+
+# Scenario 3: According to type and time
+# Already possible with the raw data
+PlayData$height/PlayData$width
+
+# Element 10: The dplyr functions
+# Go to the SILAC protein project for examples
+
+# dplyr functions:
+# 2e - summarise(), for Aggregration functions
+# 2 - the group_by() adverb
+# Apply aggregration functions:
+# Scenario 1: According to measure and type
+PlayData.t %>%
+  group_by(key, type) %>%
+  summarise(avg = mean(value))
+
+# Scenario 2: According to measure and time
+PlayData.t %>%
+  group_by(key, time) %>%
+  summarise(avg = mean(value))
+
+# Scenario 3: According to type and time
+PlayData.t %>%
+  group_by(time, type) %>%
+  summarise(avg = mean(value))
+
+#########
+# Regular Expressions
+# Find patterns in strings or numbers
+source("genes.R")
+# This makes:
+genes
+
+# Find motif: "GGGCCC"
+genes == "GGGCCC"
+# wrong - This is not pattern matching
+
+# grep - global regular expression, print
+grep("GGGCCC", genes) # which gene contains the sequence
+
+# Make use of Regular Expressions:
+# Exactly as above, but using special characters
+# "{3}" means exactly 3
+grep("G{3}C{3}", genes)
+grepl("G{3}C{3}", genes)
+
+library(stringr)
+str_detect(genes, "G{3}C{3}") # logical vector, like grepl
+str_locate(genes, "G{3}C{3}") # logical vector, like grepl
+
+# Less strict: "." means "anything"
+grep("G.{4}C", genes)
+
+# Some examples:
+genes <- c("alpha4", "p53", "CDC53", "Agft-4", "cepb2")
+genes
+
+# Which genes that begin with c (either C, c)
+str_extract(genes, regex("^c.*", ignore_case = TRUE))
 
 
 
