@@ -602,6 +602,60 @@ genes
 # Which genes that begin with c (either C, c)
 str_extract(genes, regex("^c.*", ignore_case = TRUE))
 
+# Some last examples:
+# Indexing and data types review and expansion
+# Vectors
+foo1[5] # 5th value
 
+# Data frames
+foo.df[3,] # 3rd row
+
+# Make a list and index it:
+myList <- list(A = 1:3,
+               B = 56:85,
+               C = foo.df,
+               D = plant.lm)
+# typeof(myList)
+# typeof(plant.lm)
+
+myList$C # view a part using $
+
+# What about []? this always results in a list!
+myList[3] # using numbers
+myList["C"] # using names
+
+# If you want the actual object as itself, use [[]]
+myList[[3]] # using numbers
+myList[["C"]] # using names
+
+# Access columns directly:
+myList[[3]]$tissue # typical
+myList[3]$C$tissue # :/ kinda confusing
+
+# Matrices
+# 2D vector - only one data type!
+myMatrix <- matrix(1:12, ncol = 3)
+myMatrix
+
+myMatrix[,3]
+colSums(myMatrix)
+rowSums(myMatrix)
+
+# how to find peaks in an ordered vector:
+# e.g.
+yy <- c(1:5,0:-4,0:7,3:1)
+
+myDF <- data.frame(xx = seq_along(yy),
+                   yy = yy)
+plot(myDF)
+
+# find peaks in
+diff(sign(diff(myDF$yy)))
+# Peaks produce -2
+# Minima produce 2
+
+# So where are they?
+which(diff(sign(diff(myDF$yy))) == -2) + 1 # peaks
+which(diff(sign(diff(myDF$yy))) == 2) + 1 # minima
 
 
